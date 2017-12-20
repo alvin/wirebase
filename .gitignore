@@ -1,0 +1,5 @@
+.next
+config/secret
+config/wirebase.json
+out
+node_modules
