@@ -173,6 +173,7 @@ class Commentable extends Component {
                 | Click to open discussion panel  
               .item
                 i.icon.comment
+                | ${comments.length}
         Sidebar(animation="scale down" width="wide" direction="right" visible=${visible} icon="labeled" style=${{backgroundColor:'#fff'}})
           .ui.inverted.black.block.header
             | Discussion
@@ -217,9 +218,12 @@ class Commentable extends Component {
                       input(type='email',  ref=${input => input && (this.userEmail = input)} placeholder='yourname@yourcompany.com')
                     if !signInPrompt
                       .eight.wide.field
-                        a.ui.mini.blue.button.basic(onClick=${(e) => this.setState({signInPrompt: true})} style=${{float: "right"}})
-                          i.icon.key
-                          | Sign In
+
+                        small(style=${{float: 'right'}})
+                          | Returning contributor? 
+                          a(onClick=${(e) => this.setState({signInPrompt: true})} style=${{cursor: "pointer"}})
+                            i.icon.key
+                            | Sign In
                         label Your Name
                         input(type='text',  ref=${input => input && (this.userName = input)} placeholder='Johanna Smith')
                     if signInPrompt
@@ -236,7 +240,7 @@ class Commentable extends Component {
               Actions
                 Button(className="deny" onClick=${(e) => this.setState({userPrompt: false}) } ) Cancel
                 .ui.primary.button.approve(onClick=${(e) => this.createUserOrLogin() }) Add Comment
-        span(onClick=${this.toggleVisibility} onMouseOver=${(e) => this.setState({hintActive: true}) }  onMouseOut=${(e) => this.setState({hintActive: false}) } style=${{cursor: "pointer"}})
+        span(onClick=${this.toggleVisibility} onMouseOver=${(e) => this.setState({hintActive: true}) }  onMouseOut=${(e) => this.setState({hintActive: false}) } style=${{cursor: "default"}})
           | ${children}
     `
   }
