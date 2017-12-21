@@ -1,6 +1,9 @@
 import Router from 'next/router'
 import React, { Component } from 'react'
+import ReactDOM from 'react-dom'
+
 import { Sidebar, Modal, Segment, Button, Menu, Image, Icon, Header } from 'semantic-ui-react'
+import ReactCursorPosition from 'react-cursor-position';
 
 import wirebaseConfig from '../config/wirebase'
 const workspaceId = wirebaseConfig.workspaceId;
@@ -153,30 +156,60 @@ class Commentable extends Component {
     
     
   }
-
+  
   render() {
     const { visible, comments, userPrompt, signInPrompt, resetEmailSent, hintActive} = this.state
     const { children, title } = this.props
     const Actions = Modal.Actions
     const user = typeof(window) != 'undefined' && window.firebase ? window.firebase.auth().currentUser : null
     
+    const sidebarRootDom = window.document.getElementById('sidebar-root');
+    
+    class RenderToSidebar extends React.Component {
+      constructor(props) {
+        super(props);
+        this.el = document.createElement('div');
+      }
+
+      componentDidMount() {
+        // The portal element is inserted in the DOM tree after
+        // the Modal's children are mounted, meaning that children
+        // will be mounted on a detached DOM node. If a child
+        // component requires to be attached to the DOM tree
+        // immediately when mounted, for example to measure a
+        // DOM node, or uses 'autoFocus' in a descendant, add
+        // state to Modal and only render the children when Modal
+        // is inserted in the DOM tree.
+        sidebarRootDom.appendChild(this.el);
+      }
+
+      componentWillUnmount() {
+        sidebarRootDom.removeChild(this.el);
+      }
+
+      render() {
+        return ReactDOM.createPortal(
+          this.props.children,
+          sidebarRootDom,
+        );
+      }
+    }
+    
     return pug`
-      
-      span.commentable
-        if hintActive || visible
-          Sidebar(animation="uncover" direction="bottom" visible=${true} inverted=${visible} borderless=${true} as=${Menu} size="small")
-            .item 
-              .ui.black.label ${title}
-            
-            .right.menu
-              .item 
-                | Click to open discussion panel  
-              .item
-                i.icon.comment
-                | ${comments.length}
-        Sidebar(animation="scale down" width="wide" direction="right" visible=${visible} icon="labeled" style=${{backgroundColor:'#fff'}})
+      if hintActive || visible
+        RenderToSidebar
+          .item.ui.transition.fade.in
+            .ui.label.basic
+              //(style=${{position: 'fixed',right: '1rem', zIndex: 10}})
+              | ${title} 
+          .right.menu
+            .item
+              i.icon.comment
+              | ${comments.length}
+      span(className="commentable")
+        Sidebar(animation="scale down" width="wide" direction="right" visible=${visible} icon="labeled" style=${{backgroundColor:'#fff'}} onMouseLeave=${(e) => this.setState({visible: false}) } )
           .ui.inverted.black.block.header
-            | Discussion
+            | ${title}
             .ui.header.inverted(onClick=${this.toggleVisibility}, style=${{float:'right', cursor:'pointer', marginRight: '-0.5rem'}}) ×
           .ui.padded.basic.segment
             if !comments || !comments.length
@@ -218,7 +251,6 @@ class Commentable extends Component {
                       input(type='email',  ref=${input => input && (this.userEmail = input)} placeholder='yourname@yourcompany.com')
                     if !signInPrompt
                       .eight.wide.field
-
                         small(style=${{float: 'right'}})
                           | Returning contributor? 
                           a(onClick=${(e) => this.setState({signInPrompt: true})} style=${{cursor: "pointer"}})
@@ -240,7 +272,7 @@ class Commentable extends Component {
               Actions
                 Button(className="deny" onClick=${(e) => this.setState({userPrompt: false}) } ) Cancel
                 .ui.primary.button.approve(onClick=${(e) => this.createUserOrLogin() }) Add Comment
-        span(onClick=${this.toggleVisibility} onMouseOver=${(e) => this.setState({hintActive: true}) }  onMouseOut=${(e) => this.setState({hintActive: false}) } style=${{cursor: "default"}})
+        span(onClick=${this.toggleVisibility} onMouseEnter=${(e) => this.setState({hintActive: true}) }  onMouseLeave=${(e) => this.setState({hintActive: false}) } style=${{cursor: "default"}})
           | ${children}
     `
   }
