@@ -1,5 +1,6 @@
 # --- wirebase ---
-
+# notice: this repo is unmaintained and archived, but you're welcome fork or just use for reference
+#
 ### HTML wireframing with next.js + PUG/Jade + Semantic UI +Firebase for comments/annotations
 
 
